@@ -2,6 +2,7 @@ package net.minpro.meditation.viewmodel
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import net.minpro.meditation.data.ThemeData
 import net.minpro.meditation.model.UserSettings
 import net.minpro.meditation.model.UserSettingsRepository
 import net.minpro.meditation.util.PlayStatus
@@ -40,6 +41,12 @@ class MainViewModel: ViewModel() {
         remainedTimeSeconds.value = userSettingsRepository.setTime(selectedItemId) * 60
         displayTimeSeconds.value = changeTimeFormat(remainedTimeSeconds.value!!)
 
+    }
+
+    fun setTheme(themeData: ThemeData) {
+        userSettingsRepository.setTheme(themeData)
+        txtTheme.value = userSettingsRepository.loadUserSettings().themeName
+        themePicFileResId.value = userSettingsRepository.loadUserSettings().themeResId
     }
 
     var msgUpperSmall = MutableLiveData<String>()
