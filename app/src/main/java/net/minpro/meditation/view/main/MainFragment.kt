@@ -55,15 +55,66 @@ class MainFragment : Fragment() {
         observeViewModel()
     }
 
+
     private fun observeViewModel() {
         viewModel.playStatus.observe(this, Observer { status ->
+
+            // 見た目
+            updateUi(status!!)
+
+            // 動き
             when (status) {
-                PlayStatus.BEFORE_START -> btnPlay.setBackgroundResource(R.drawable.button_play)
+                PlayStatus.BEFORE_START -> {
+
+                }
+                PlayStatus.ON_START -> {
+                    viewModel.countDownBeforeStart()
+                }
+                PlayStatus.RUNNING -> {
+
+                }
+                PlayStatus.PAUSE -> {
+
+                }
+                PlayStatus.END -> {
+
+                }
             }
         })
         viewModel.themePicFileResId.observe(this, Observer { themePicResId ->
             loadBackgroundImage(this, themePicResId, meditation_screen)
         })
+    }
+
+    private fun updateUi(status: Int) {
+        when(status){
+            PlayStatus.BEFORE_START -> {
+                binding.apply {
+                    btnPlay.apply {
+                        visibility = View.VISIBLE
+                        setBackgroundResource(R.drawable.button_play)
+                    }
+                    btnFinish.visibility = View.INVISIBLE
+                    txtShowMenu.visibility = View.INVISIBLE
+                }
+            }
+            PlayStatus.ON_START -> {
+                binding.apply {
+                    btnPlay.visibility = View.INVISIBLE
+                    btnFinish.visibility = View.INVISIBLE
+                    txtShowMenu.visibility = View.VISIBLE
+                }
+            }
+            PlayStatus.RUNNING -> {
+
+            }
+            PlayStatus.PAUSE -> {
+
+            }
+            PlayStatus.END -> {
+
+            }
+        }
     }
 
     private fun loadBackgroundImage(mainFragment: MainFragment, themePicResId: Int?, meditation_screen: ConstraintLayout?) {

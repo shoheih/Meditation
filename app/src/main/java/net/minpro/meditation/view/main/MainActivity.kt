@@ -1,15 +1,22 @@
 package net.minpro.meditation.view.main
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import net.minpro.meditation.R
 import net.minpro.meditation.util.FragmentTag
+import net.minpro.meditation.util.PlayStatus
 import net.minpro.meditation.view.dialog.LevelSelectDialog
 import net.minpro.meditation.view.dialog.ThemeSelectDialog
 import net.minpro.meditation.view.dialog.TimeSelectDialog
+import net.minpro.meditation.viewmodel.MainViewModel
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -22,6 +29,9 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.screen_container, MainFragment())
                 .commit()
         }
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        observeViewModel()
 
         btmNavi.setOnNavigationItemSelectedListener { item ->
             when(item.itemId) {
@@ -40,5 +50,27 @@ class MainActivity : AppCompatActivity() {
                 else -> { false }
             }
         }
+    }
+
+    private fun observeViewModel() {
+        viewModel.playStatus.observe(this, Observer { status ->
+            when(status){
+                PlayStatus.BEFORE_START -> {
+                    btmNavi.visibility = View.VISIBLE
+                }
+                PlayStatus.ON_START -> {
+                    btmNavi.visibility = View.INVISIBLE
+                }
+                PlayStatus.RUNNING -> {
+
+                }
+                PlayStatus.PAUSE -> {
+
+                }
+                PlayStatus.END -> {
+
+                }
+            }
+        })
     }
 }

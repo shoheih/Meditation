@@ -1,13 +1,14 @@
 package net.minpro.meditation.viewmodel
 
+import android.app.Application
+import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
 import net.minpro.meditation.data.ThemeData
 import net.minpro.meditation.model.UserSettings
 import net.minpro.meditation.model.UserSettingsRepository
 import net.minpro.meditation.util.PlayStatus
 
-class MainViewModel: ViewModel() {
+class MainViewModel(val context: Application): AndroidViewModel(context) {
 
     private val userSettingsRepository = UserSettingsRepository()
     private lateinit var userSettings: UserSettings
@@ -47,6 +48,19 @@ class MainViewModel: ViewModel() {
         userSettingsRepository.setTheme(themeData)
         txtTheme.value = userSettingsRepository.loadUserSettings().themeName
         themePicFileResId.value = userSettingsRepository.loadUserSettings().themeResId
+    }
+
+    fun changeStatus() {
+        val status = playStatus.value
+        when(status){
+            PlayStatus.BEFORE_START -> {playStatus.value = PlayStatus.ON_START}
+            PlayStatus.RUNNING -> {playStatus.value = PlayStatus.PAUSE}
+            PlayStatus.PAUSE -> {playStatus.value = PlayStatus.RUNNING}
+        }
+    }
+
+    fun countDownBeforeStart() {
+
     }
 
     var msgUpperSmall = MutableLiveData<String>()
