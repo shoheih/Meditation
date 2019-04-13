@@ -55,7 +55,6 @@ class MainFragment : Fragment() {
         observeViewModel()
     }
 
-
     private fun observeViewModel() {
         viewModel.playStatus.observe(this, Observer { status ->
 
@@ -71,13 +70,13 @@ class MainFragment : Fragment() {
                     viewModel.countDownBeforeStart()
                 }
                 PlayStatus.RUNNING -> {
-
+                    viewModel.startMeditation()
                 }
                 PlayStatus.PAUSE -> {
-
+                    viewModel.pauseMeditation()
                 }
                 PlayStatus.END -> {
-
+                    viewModel.finishMeditation()
                 }
             }
         })
@@ -106,10 +105,27 @@ class MainFragment : Fragment() {
                 }
             }
             PlayStatus.RUNNING -> {
-
+                binding.apply {
+                    btnPlay.apply {
+                        visibility = View.VISIBLE
+                        setBackgroundResource(R.drawable.button_pause)
+                    }
+                    btnFinish.visibility = View.INVISIBLE
+                    txtShowMenu.visibility = View.VISIBLE
+                }
             }
             PlayStatus.PAUSE -> {
-
+                binding.apply {
+                    btnPlay.apply {
+                        visibility = View.VISIBLE
+                        setBackgroundResource(R.drawable.button_play)
+                    }
+                    btnFinish.apply {
+                        visibility = View.VISIBLE
+                        setBackgroundResource(R.drawable.button_finish)
+                    }
+                    txtShowMenu.visibility = View.VISIBLE
+                }
             }
             PlayStatus.END -> {
 

@@ -3,15 +3,37 @@ package net.minpro.meditation.viewmodel
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
+import net.minpro.meditation.R
 import net.minpro.meditation.data.ThemeData
 import net.minpro.meditation.model.UserSettings
 import net.minpro.meditation.model.UserSettingsRepository
 import net.minpro.meditation.util.PlayStatus
+import java.util.*
+import kotlin.concurrent.schedule
 
 class MainViewModel(val context: Application): AndroidViewModel(context) {
 
+    var msgUpperSmall = MutableLiveData<String>()
+    var msgLowerLarge = MutableLiveData<String>()
+    var themePicFileResId = MutableLiveData<Int>()
+    var txtTheme = MutableLiveData<String>()
+    var txtLevel = MutableLiveData<String>()
+
+    var remainedTimeSeconds = MutableLiveData<Int>()
+    var displayTimeSeconds = MutableLiveData<String>()
+
+    var playStatus = MutableLiveData<Int>()
+
     private val userSettingsRepository = UserSettingsRepository()
     private lateinit var userSettings: UserSettings
+
+    private var timerMeditaion: Timer? = null
+
+    //呼吸時間
+    private val inhaleInterval = 4
+    private var holdInterval = 0
+    private var exhaleInterval = 0
+    private var totalInterval = 0
 
     fun initParameters() {
         userSettings = userSettingsRepository.loadUserSettings()
@@ -60,17 +82,116 @@ class MainViewModel(val context: Application): AndroidViewModel(context) {
     }
 
     fun countDownBeforeStart() {
-
+        msgUpperSmall.value = context.resources.getString(R.string.starts_in)
+        var timeRemained = 3
+        msgLowerLarge.value = timeRemained.toString()
+        val timer = Timer()
+        timer.schedule(1000, 1000) {
+            if (timeRemained > 1) {
+                timeRemained -= 1
+                msgLowerLarge.postValue(timeRemained.toString())
+            } else {
+                playStatus.postValue(PlayStatus.RUNNING)
+                timeRemained = 0
+                timer.cancel()
+            }
+        }
     }
 
-    var msgUpperSmall = MutableLiveData<String>()
-    var msgLowerLarge = MutableLiveData<String>()
-    var themePicFileResId = MutableLiveData<Int>()
-    var txtTheme = MutableLiveData<String>()
-    var txtLevel = MutableLiveData<String>()
+    fun startMeditation() {
+        holdInterval = setHoldInterval()
+        exhaleInterval = setExhaleInterval()
+        totalInterval = inhaleInterval + holdInterval + exhaleInterval
 
-    var remainedTimeSeconds = MutableLiveData<Int>()
-    var displayTimeSeconds = MutableLiveData<String>()
+        remainedTimeSeconds.value = adjustRemainedTime(remainedTimeSeconds.value, totalInterval)
+        displayTimeSeconds.value = changeTimeFormat(remainedTimeSeconds.value!!)
 
-    var playStatus = MutableLiveData<Int>()
+        msgUpperSmall.value = context.getString(R.string.inhale)
+        msgLowerLarge.value = inhaleInterval.toString()
+
+        clockMeditation()
+    }
+
+    private fun clockMeditation() {
+        var timeElapsed = 0
+        timerMeditaion = Timer()
+        timerMeditaion?.schedule(1000, 1000) {
+            val tempTime = remainedTimeSeconds.value!! - 1
+            remainedTimeSeconds.postValue(tempTime)
+            displayTimeSeconds.postValue(changeTimeFormat(tempTime))
+            if (remainedTimeSeconds.value!! <= 1) {
+                msgUpperSmall.postValue("")
+                msgLowerLarge.postValue(context.resources.getString(R.string.meiso_finish))
+                playStatus.postValue(PlayStatus.END)
+                cancelTimer()
+                return@schedule
+            }
+            timeElapsed = if (timeElapsed >= totalInterval - 1) 0 else timeElapsed + 1
+            setDisplayText(timeElapsed)
+        }
+    }
+
+    private fun setDisplayText(timeElapsed: Int) {
+        if (timeElapsed >= 0 && timeElapsed < inhaleInterval) {
+            msgUpperSmall.postValue(context.resources.getString(R.string.inhale))
+            msgLowerLarge.postValue((inhaleInterval - timeElapsed).toString())
+        } else if (timeElapsed < inhaleInterval + holdInterval) {
+            msgUpperSmall.postValue(context.resources.getString(R.string.hold))
+            msgLowerLarge.postValue((inhaleInterval + holdInterval - timeElapsed).toString())
+        } else {
+            msgUpperSmall.postValue(context.resources.getString(R.string.exhale))
+            msgLowerLarge.postValue((totalInterval - timeElapsed).toString())
+        }
+    }
+
+    private fun cancelTimer() {
+        timerMeditaion?.cancel()
+    }
+
+    private fun adjustRemainedTime(remainedTime: Int?, totalInterval: Int): Int? {
+        val remainder = remainedTime!! % totalInterval
+        return if (remainder > (totalInterval / 2)) {
+            remainedTime + (totalInterval - remainder)
+        } else {
+            remainedTime - remainder
+        }
+    }
+
+    private fun setExhaleInterval(): Int {
+        return when(userSettingsRepository.loadUserSettings().levelId) {
+            0 -> 4
+            1 -> 8
+            2 -> 8
+            3 -> 8
+            else -> 0
+        }
+    }
+
+    private fun setHoldInterval(): Int {
+        return when(userSettingsRepository.loadUserSettings().levelId) {
+            0 -> 4
+            1 -> 4
+            2 -> 8
+            3 -> 16
+            else -> 0
+        }
+    }
+
+    fun pauseMeditation() {
+        cancelTimer()
+    }
+
+    fun finishMeditation() {
+        cancelTimer()
+        playStatus.value = PlayStatus.BEFORE_START
+        remainedTimeSeconds.value = userSettingsRepository.loadUserSettings().time * 60
+        displayTimeSeconds.value = changeTimeFormat(remainedTimeSeconds.value!!)
+        msgUpperSmall.value = ""
+        msgLowerLarge.value = context.resources.getString(R.string.meiso_finish)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelTimer()
+    }
 }
