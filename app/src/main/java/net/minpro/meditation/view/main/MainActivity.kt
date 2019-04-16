@@ -2,17 +2,12 @@ package net.minpro.meditation.view.main
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import net.minpro.meditation.R
-import net.minpro.meditation.service.MusicService
+import net.minpro.meditation.service.MusicServiceHelper
 import net.minpro.meditation.util.FragmentTag
 import net.minpro.meditation.util.PlayStatus
 import net.minpro.meditation.view.dialog.LevelSelectDialog
@@ -24,7 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
 
-    private var musicService: MusicService? = null
+    private var musicServiceHelper: MusicServiceHelper? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -59,21 +54,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val intent = Intent(this@MainActivity, MusicService::class.java)
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        musicServiceHelper = MusicServiceHelper(this)
+        musicServiceHelper?.bindService()
     }
 
-    private val serviceConnection = object : ServiceConnection {
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as MusicService.MusicBinder
-            musicService = binder.getService()
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-
-        }
-
+    override fun onBackPressed() {
+        super.onBackPressed()
+        musicServiceHelper?.stopBgm()
+        finish()
     }
 
     private fun observeViewModel() {
@@ -87,16 +75,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 PlayStatus.RUNNING -> {
                     btmNavi.visibility = View.INVISIBLE
-                    musicService?.startBgm()
+                    musicServiceHelper?.startBgm()
                 }
                 PlayStatus.PAUSE -> {
                     btmNavi.visibility = View.INVISIBLE
-                    musicService?.stopBgm()
+                    musicServiceHelper?.stopBgm()
                 }
                 PlayStatus.END -> {
                     btmNavi.visibility = View.VISIBLE
-                    musicService?.stopBgm()
-                    musicService?.ringFinalGong()
+                    musicServiceHelper?.stopBgm()
+                    musicServiceHelper?.ringFinalGong()
                 }
             }
         })
