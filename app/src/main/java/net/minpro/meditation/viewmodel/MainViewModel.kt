@@ -24,6 +24,8 @@ class MainViewModel(val context: Application): AndroidViewModel(context) {
 
     var playStatus = MutableLiveData<Int>()
 
+    var volume = MutableLiveData<Int>()
+
     private val userSettingsRepository = UserSettingsRepository()
     private lateinit var userSettings: UserSettings
 
@@ -193,5 +195,9 @@ class MainViewModel(val context: Application): AndroidViewModel(context) {
     override fun onCleared() {
         super.onCleared()
         cancelTimer()
+    }
+
+    fun setVolume(progress: Int) {
+        volume.value = progress
     }
 }

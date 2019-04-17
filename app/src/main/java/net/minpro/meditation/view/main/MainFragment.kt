@@ -50,8 +50,8 @@ class MainFragment : Fragment() {
             setLifecycleOwner(activity)
         }
 
-        viewModel.initParameters()
 
+        viewModel.initParameters()
         observeViewModel()
     }
 

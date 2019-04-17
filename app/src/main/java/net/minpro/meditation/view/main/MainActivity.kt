@@ -88,5 +88,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        viewModel.volume.observe(this, Observer { volume ->
+            musicServiceHelper?.setVolume(volume!!)
+        })
     }
 }

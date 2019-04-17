@@ -33,8 +33,8 @@ class MusicServiceHelper(val context: Context) {
         musicService?.stopBgm()
     }
 
-    fun setVolume() {
-        musicService?.setVolume()
+    fun setVolume(volume: Int) {
+        musicService?.setVolume(volume)
     }
 
     fun ringFinalGong() {
