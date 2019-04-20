@@ -8,10 +8,12 @@ import net.minpro.meditation.data.ThemeData
 import net.minpro.meditation.model.UserSettings
 import net.minpro.meditation.model.UserSettingsRepository
 import net.minpro.meditation.util.PlayStatus
+import org.koin.standalone.KoinComponent
+import org.koin.standalone.inject
 import java.util.*
 import kotlin.concurrent.schedule
 
-class MainViewModel(val context: Application): AndroidViewModel(context) {
+class MainViewModel(val context: Application): AndroidViewModel(context), KoinComponent {
 
     var msgUpperSmall = MutableLiveData<String>()
     var msgLowerLarge = MutableLiveData<String>()
@@ -26,7 +28,8 @@ class MainViewModel(val context: Application): AndroidViewModel(context) {
 
     var volume = MutableLiveData<Int>()
 
-    private val userSettingsRepository = UserSettingsRepository()
+    //private val userSettingsRepository = UserSettingsRepository()
+    private val userSettingsRepository: UserSettingsRepository by inject()
     private lateinit var userSettings: UserSettings
 
     private var timerMeditaion: Timer? = null

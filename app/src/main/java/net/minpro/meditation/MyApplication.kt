@@ -3,8 +3,10 @@ package net.minpro.meditation
 import android.app.Application
 import android.content.Context
 import net.minpro.meditation.data.ThemeData
+import net.minpro.meditation.di.appModule
 import net.minpro.meditation.util.NO_BGM
 import net.minpro.meditation.util.ThemeId
+import org.koin.android.ext.android.startKoin
 
 class MyApplication: Application() {
 
@@ -12,6 +14,7 @@ class MyApplication: Application() {
         super.onCreate()
         appContext = this
         themeList = setThemeData()
+        startKoin(this, listOf(appModule))
     }
 
     private fun setThemeData(): ArrayList<ThemeData> {
